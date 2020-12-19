@@ -4,13 +4,11 @@
 #include <rfm95spi.h>
 #include <stdio.h>
 
-//#define RFM95_RPI 1
-#ifdef RFM95_RPI //RPI
-
-#include <bcm2835.h>
 
 RFM95_status_t RFM95spi_init() {
-  if (!bcm2835_init()) {
+  // CS0 spi port 0 | clock speed of 250000 hz
+  wiringPiSetup()
+  if (!wiringPiSPISetup(0, 250000)) {
     return RFM95_ERROR;
   }
 
@@ -28,7 +26,7 @@ RFM95_status_t RFM95spi_init() {
 }
 
 void RFM95spi_transfernb(char* tbuf, char* rbuf, uint32_t len) {
-  bcm2835_spi_transfernb(tbuf, rbuf, len);
+  wiringPiSPIDataRW(0, tbuf, len );
 }
 
 #endif

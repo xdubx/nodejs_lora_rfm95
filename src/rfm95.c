@@ -1,5 +1,3 @@
-
-
 #include <rfm95spi.h>
 #include <rfm95.h>
 #include <stdbool.h>
@@ -64,6 +62,10 @@ RFM95_status_t RFM95_init() {
 }
 
 RFM95_status_t RFM95_setFrequency(int32_t freq) {
+  uint32_t frf = (freq * 1000000.0) / RH_RF95_FSTEP;
+  RFM95_writeRegister(RFM95_REG_FRF_MSB, (frf >> 16) & 0xff);
+  RFM95_writeRegister(RFM95_REG_FRF_MID, (frf >> 8) & 0xff);
+  RFM95_writeRegister(RFM95_REG_FRF_LSB, frf & 0xff);
   return RFM95_OK;
 }
 
@@ -72,6 +74,7 @@ RFM95_status_t RFM95_setModemConfig(uint8_t mc) {
 }
 
 RFM95_status_t RFM95_setTxPower(int8_t power) {
+  RFM95_writeRegister(RFM95_REG_PA_CONFIG, RFM_MAX_POWER | power);
   return RFM95_OK;
 }
 
@@ -87,11 +90,15 @@ RFM95_status_t RFM95_available() {
 }
 
 RFM95_status_t RFM95_recv(uint8_t* buf, uint8_t* len) {
+  
+  
   return RFM95_OK;
 }
 
-int16_t RFM95_lastRssi() {
-  return 123;
+uint8_t RFM95_lastRssi() {
+  uint8_t rssi = RFM95_readRegister(RFM95_REG_PKT_RSSI_VALUE);
+
+  return rssi;
 }
 
 uint8_t RFM95_readRegister(uint8_t addr) {
@@ -100,12 +107,12 @@ uint8_t RFM95_readRegister(uint8_t addr) {
 
   /* Add the read command to the address. */
   cmd[0] = addr & ~RFM95_WRITE_MASK;
-
+  cmd[1] = 0x00;
   /* Transmit 1 byte and receive 1. Actually receive 2, but the first doesn't matter. */
   RFM95spi_transfernb(cmd, data, 2);
 
   /* The returned value is the second byte */
-  return data[1];
+  return cmd[1];
 }
 
 void RFM95_writeRegister(uint8_t addr, uint8_t val) {
@@ -114,7 +121,6 @@ void RFM95_writeRegister(uint8_t addr, uint8_t val) {
   /* Enable the write bit to the address. */
   tbuf[0] = addr | RFM95_WRITE_MASK;
   tbuf[1] = val;
-
   RFM95spi_transfernb(tbuf, rbuf, 2);
 }
 

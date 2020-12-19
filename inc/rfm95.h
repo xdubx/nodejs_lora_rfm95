@@ -144,6 +144,8 @@
 #define RFM95_PAYLOAD_CRC_ON                        0x04
 #define RFM95_SYM_TIMEOUT_MSB                       0x03
 
+#define RH_RF95_FXOSC 32000000.0
+#define RH_RF95_FSTEP  (RH_RF95_FXOSC / 524288)
 
 typedef struct
 {
@@ -176,7 +178,7 @@ RFM95_status_t RFM95_setMode(uint8_t mode);
 RFM95_status_t RFM95_send(uint8_t* data, uint8_t len);
 RFM95_status_t RFM95_available();
 RFM95_status_t RFM95_recv(uint8_t* buf, uint8_t* len);
-int16_t RFM95_lastRssi();
+uint8_t RFM95_lastRssi();
 
 
 #ifdef __cplusplus
